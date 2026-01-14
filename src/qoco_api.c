@@ -474,31 +474,32 @@ QOCOInt qoco_kkt_solve(QOCOSolver* solver,
                        const QOCOFloat* rhs,
                        QOCOFloat* sol)
 {
-  if (!solver || !solver->linsys || !solver->linsys_data) {
+  if (!solver || !solver->linsys || !solver->linsys_data || !solver->work) {
     return qoco_error(QOCO_INVALID_SOLVER_ERROR);
   }
 
   QOCOWorkspace* work = solver->work;
-  const QOCOInt nxyz = work->x->n + work->y->n + work->s->n;
+  QOCOProblemData* data = work->data;
+  QOCOInt nxyz = data->n + data->p + data->m;
 
   // Copy RHS into internal buffer (respect CPU/GPU mode)
   set_cpu_mode(1);
   for (QOCOInt i = 0; i < nxyz; ++i) {
-    work->rhs->data[i] = rhs[i];
+    get_data_vectorf(work->rhs)[i] = rhs[i];
   }
   set_cpu_mode(0);
 
-  // Solve using existing factorization
-  solver->linsys->linsys_solve(
-      solver->linsys_data,
-      work->rhs,
-      work->xyz
-  );
+  // Sync RHS to device
+  sync_vector_to_device(work->rhs);
+
+  // Solve using existing factorization with iterative refinement
+  solver->linsys->linsys_solve(solver->linsys_data, work, work->rhs, work->xyz,
+                               solver->settings->iter_ref_iters);
 
   // Copy solution out
   set_cpu_mode(1);
   for (QOCOInt i = 0; i < nxyz; ++i) {
-    sol[i] = work->xyz->data[i];
+    sol[i] = get_data_vectorf(work->xyz)[i];
   }
   set_cpu_mode(0);
 
