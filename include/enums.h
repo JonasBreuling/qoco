@@ -21,7 +21,11 @@ enum qoco_error_code {
   QOCO_AMD_ERROR,
 
   // Memory allocation error.
-  QOCO_MALLOC_ERROR
+  QOCO_MALLOC_ERROR,
+
+  // Invalid solver error.
+  QOCO_INVALID_SOLVER_ERROR
+
 };
 
 /**

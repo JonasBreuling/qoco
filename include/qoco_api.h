@@ -125,6 +125,16 @@ void update_matrix_data(QOCOSolver* solver, QOCOFloat* Pxnew, QOCOFloat* Axnew,
 QOCOInt qoco_solve(QOCOSolver* solver);
 
 /**
+ * Solve the (current) perturbed KKT system using the existing factorization.
+ * The solver must have been set up and factorized (i.e. qoco_solve called at least once).
+ *
+ * rhs and sol are vectors of length (n + p + m).
+ */
+QOCOInt qoco_kkt_solve(QOCOSolver* solver,
+                       const QOCOFloat* rhs,
+                       QOCOFloat* sol);
+
+/**
  * @brief Frees all memory allocated by qoco_setup.
  *
  * @param solver Pointer to solver.

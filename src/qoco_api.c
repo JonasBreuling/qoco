@@ -470,6 +470,41 @@ QOCOInt qoco_solve(QOCOSolver* solver)
   return QOCO_MAX_ITER;
 }
 
+QOCOInt qoco_kkt_solve(QOCOSolver* solver,
+                       const QOCOFloat* rhs,
+                       QOCOFloat* sol)
+{
+  if (!solver || !solver->linsys || !solver->linsys_data) {
+    return qoco_error(QOCO_INVALID_SOLVER_ERROR);
+  }
+
+  QOCOWorkspace* work = solver->work;
+  const QOCOInt nxyz = work->x->n + work->y->n + work->s->n;
+
+  // Copy RHS into internal buffer (respect CPU/GPU mode)
+  set_cpu_mode(1);
+  for (QOCOInt i = 0; i < nxyz; ++i) {
+    work->rhs->data[i] = rhs[i];
+  }
+  set_cpu_mode(0);
+
+  // Solve using existing factorization
+  solver->linsys->linsys_solve(
+      solver->linsys_data,
+      work->rhs,
+      work->xyz
+  );
+
+  // Copy solution out
+  set_cpu_mode(1);
+  for (QOCOInt i = 0; i < nxyz; ++i) {
+    sol[i] = work->xyz->data[i];
+  }
+  set_cpu_mode(0);
+
+  return QOCO_NO_ERROR;
+}
+
 QOCOInt qoco_cleanup(QOCOSolver* solver)
 {
 
