@@ -479,14 +479,10 @@ QOCOInt qoco_kkt_solve(QOCOSolver* solver,
   }
 
   QOCOWorkspace* work = solver->work;
-  QOCOProblemData* data = work->data;
-  QOCOInt nxyz = data->n + data->p + data->m;
 
   // Copy RHS into internal buffer (respect CPU/GPU mode)
   set_cpu_mode(1);
-  for (QOCOInt i = 0; i < nxyz; ++i) {
-    get_data_vectorf(work->rhs)[i] = rhs[i];
-  }
+  copy_arrayf(rhs, get_data_vectorf(work->rhs), work->rhs->len);
   set_cpu_mode(0);
 
   // Sync RHS to device
@@ -498,9 +494,7 @@ QOCOInt qoco_kkt_solve(QOCOSolver* solver,
 
   // Copy solution out
   set_cpu_mode(1);
-  for (QOCOInt i = 0; i < nxyz; ++i) {
-    sol[i] = get_data_vectorf(work->xyz)[i];
-  }
+  copy_arrayf(get_data_vectorf(work->xyz), sol, work->xyz->len);
   set_cpu_mode(0);
 
   return QOCO_NO_ERROR;
