@@ -474,8 +474,9 @@ QOCOInt qoco_kkt_solve(QOCOSolver* solver,
                        const QOCOFloat* rhs,
                        QOCOFloat* sol)
 {
-  if (!solver || !solver->linsys || !solver->linsys_data || !solver->work) {
-    return qoco_error(QOCO_INVALID_SOLVER_ERROR);
+  // Check that the solver has been factorized (qoco_solve must be called first)
+  if (solver->sol->status == QOCO_UNSOLVED) {
+    return qoco_error(QOCO_NOT_SOLVED_ERROR);
   }
 
   QOCOWorkspace* work = solver->work;

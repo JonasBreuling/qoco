@@ -23,8 +23,8 @@ enum qoco_error_code {
   // Memory allocation error.
   QOCO_MALLOC_ERROR,
 
-  // Invalid solver error.
-  QOCO_INVALID_SOLVER_ERROR
+  // Solver was not called yet.
+  QOCO_NOT_SOLVED_ERROR
 
 };
 

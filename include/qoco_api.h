@@ -128,13 +128,14 @@ QOCOInt qoco_solve(QOCOSolver* solver);
  * @brief Solves the KKT system using the existing factorization.
  *
  * Solves the perturbed KKT system Kx = rhs using the existing factorization.
- * The solver must have been set up and factorized (i.e. qoco_solve called at
- * least once).
+ * The solver must have been set up and factorized (i.e. qoco_solve must be
+ * called at least once first). Calling this function before qoco_solve will
+ * return an error.
  *
  * @param solver Pointer to solver.
  * @param rhs Right-hand side vector of length (n + p + m).
  * @param sol Solution vector of length (n + p + m).
- * @return 0 if successful, error code otherwise.
+ * @return 0 (QOCO_NO_ERROR) if successful, error code otherwise.
  */
 QOCOInt qoco_kkt_solve(QOCOSolver* solver,
                        const QOCOFloat* rhs,
