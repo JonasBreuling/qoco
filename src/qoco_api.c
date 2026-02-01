@@ -472,7 +472,8 @@ QOCOInt qoco_solve(QOCOSolver* solver)
 
 QOCOInt qoco_kkt_solve(QOCOSolver* solver,
                        const QOCOFloat* rhs,
-                       QOCOFloat* sol)
+                       QOCOFloat* sol,
+                       QOCOInt iter_ref_iters)
 {
   // Check that the solver has been factorized (qoco_solve must be called first)
   if (solver->sol->status == QOCO_UNSOLVED) {
@@ -491,7 +492,7 @@ QOCOInt qoco_kkt_solve(QOCOSolver* solver,
 
   // Solve using existing factorization with iterative refinement
   solver->linsys->linsys_solve(solver->linsys_data, work, work->rhs, work->xyz,
-                               solver->settings->iter_ref_iters);
+                               iter_ref_iters);
 
   // Copy solution out
   set_cpu_mode(1);

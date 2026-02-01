@@ -132,14 +132,20 @@ QOCOInt qoco_solve(QOCOSolver* solver);
  * called at least once first). Calling this function before qoco_solve will
  * return an error.
  *
+ * The number of iterative refinement steps can be specified. Call
+ * qoco_kkt_solve() with the desired number of iterative refinement steps.
+ *
  * @param solver Pointer to solver.
  * @param rhs Right-hand side vector of length (n + p + m).
  * @param sol Solution vector of length (n + p + m).
+ * @param iter_ref_iters Number of iterative refinement steps to perform
+ *                       (0 means no iterative refinement).
  * @return 0 (QOCO_NO_ERROR) if successful, error code otherwise.
  */
 QOCOInt qoco_kkt_solve(QOCOSolver* solver,
                        const QOCOFloat* rhs,
-                       QOCOFloat* sol);
+                       QOCOFloat* sol,
+                       QOCOInt iter_ref_iters);
 
 /**
  * @brief Frees all memory allocated by qoco_setup.
