@@ -148,6 +148,23 @@ QOCOInt qoco_kkt_solve(QOCOSolver* solver,
                        QOCOInt iter_ref_iters);
 
 /**
+ * @brief Multiplies the original (unregularized) KKT matrix K by a vector.
+ *
+ * Computes y = K * x where K is the original KKT matrix constructed from the
+ * problem data and current Nesterov-Todd scaling (i.e., not including any
+ * static/dynamic regularization applied during factorization). The solver must
+ * be set up (i.e., qoco_solve called at least once) before calling this
+ * function.
+ *
+ * @param solver Pointer to solver.
+ * @param x Input vector of length (n + p + m).
+ * @param y Output vector of length (n + p + m).
+ * @return 0 (QOCO_NO_ERROR) if successful, error code otherwise.
+ */
+QOCOInt qoco_kkt_multiply(QOCOSolver* solver, const QOCOFloat* x,
+                          QOCOFloat* y);
+
+/**
  * @brief Frees all memory allocated by qoco_setup.
  *
  * @param solver Pointer to solver.
