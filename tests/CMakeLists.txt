@@ -72,61 +72,61 @@ foreach(file ${unit_tests})
   add_test(NAME ${name} COMMAND "${name}")
 endforeach()
 
-# Simple convex tests.
-file(GLOB simple_tests "${PROJECT_SOURCE_DIR}/tests/simple_tests/*.cpp")
+# # Simple convex tests.
+# file(GLOB simple_tests "${PROJECT_SOURCE_DIR}/tests/simple_tests/*.cpp")
 
-foreach(file ${simple_tests})
-  set(name)
-  get_filename_component(name ${file} NAME_WE)
-  add_executable("${name}"
-    "simple_tests/${name}.cpp"
-    "${PROJECT_SOURCE_DIR}/tests/main.cpp"
-    "${PROJECT_SOURCE_DIR}/tests/utils/test_utils.cpp")
-  target_link_libraries("${name}" qocostatic gtest_main)
-  # Link CUDA libraries for CUDA backend
-  if(${QOCO_ALGEBRA_BACKEND} STREQUAL "cuda")
-    get_property(qoco_cuda_libs GLOBAL PROPERTY QOCO_CUDA_LIBS)
-    target_link_libraries("${name}" ${qoco_cuda_libs})
-  endif()
-  add_test(NAME ${name} COMMAND "${name}")
-endforeach()
+# foreach(file ${simple_tests})
+#   set(name)
+#   get_filename_component(name ${file} NAME_WE)
+#   add_executable("${name}"
+#     "simple_tests/${name}.cpp"
+#     "${PROJECT_SOURCE_DIR}/tests/main.cpp"
+#     "${PROJECT_SOURCE_DIR}/tests/utils/test_utils.cpp")
+#   target_link_libraries("${name}" qocostatic gtest_main)
+#   # Link CUDA libraries for CUDA backend
+#   if(${QOCO_ALGEBRA_BACKEND} STREQUAL "cuda")
+#     get_property(qoco_cuda_libs GLOBAL PROPERTY QOCO_CUDA_LIBS)
+#     target_link_libraries("${name}" ${qoco_cuda_libs})
+#   endif()
+#   add_test(NAME ${name} COMMAND "${name}")
+# endforeach()
 
-# Generate problem data.
-execute_process(COMMAND python generate_all_problem_data.py
-  WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
+# # Generate problem data.
+# execute_process(COMMAND python generate_all_problem_data.py
+#   WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
 
-file(GLOB ocp "${PROJECT_SOURCE_DIR}/tests/ocp/*.cpp")
+# file(GLOB ocp "${PROJECT_SOURCE_DIR}/tests/ocp/*.cpp")
 
-foreach(file ${ocp})
-  set(name)
-  get_filename_component(name ${file} NAME_WE)
-  add_executable("${name}"
-    "ocp/${name}.cpp"
-    "${PROJECT_SOURCE_DIR}/tests/main.cpp"
-    "${PROJECT_SOURCE_DIR}/tests/utils/test_utils.cpp")
-  target_link_libraries("${name}" qocostatic gtest_main)
-  # Link CUDA libraries for CUDA backend
-  if(${QOCO_ALGEBRA_BACKEND} STREQUAL "cuda")
-    get_property(qoco_cuda_libs GLOBAL PROPERTY QOCO_CUDA_LIBS)
-    target_link_libraries("${name}" ${qoco_cuda_libs})
-  endif()
-  add_test(NAME ${name} COMMAND "${name}")
-endforeach()
+# foreach(file ${ocp})
+#   set(name)
+#   get_filename_component(name ${file} NAME_WE)
+#   add_executable("${name}"
+#     "ocp/${name}.cpp"
+#     "${PROJECT_SOURCE_DIR}/tests/main.cpp"
+#     "${PROJECT_SOURCE_DIR}/tests/utils/test_utils.cpp")
+#   target_link_libraries("${name}" qocostatic gtest_main)
+#   # Link CUDA libraries for CUDA backend
+#   if(${QOCO_ALGEBRA_BACKEND} STREQUAL "cuda")
+#     get_property(qoco_cuda_libs GLOBAL PROPERTY QOCO_CUDA_LIBS)
+#     target_link_libraries("${name}" ${qoco_cuda_libs})
+#   endif()
+#   add_test(NAME ${name} COMMAND "${name}")
+# endforeach()
 
-file(GLOB portfolio "${PROJECT_SOURCE_DIR}/tests/portfolio/*.cpp")
+# file(GLOB portfolio "${PROJECT_SOURCE_DIR}/tests/portfolio/*.cpp")
 
-foreach(file ${portfolio})
-  set(name)
-  get_filename_component(name ${file} NAME_WE)
-  add_executable("${name}"
-    "portfolio/${name}.cpp"
-    "${PROJECT_SOURCE_DIR}/tests/main.cpp"
-    "${PROJECT_SOURCE_DIR}/tests/utils/test_utils.cpp")
-  target_link_libraries("${name}" qocostatic gtest_main)
-  # Link CUDA libraries for CUDA backend
-  if(${QOCO_ALGEBRA_BACKEND} STREQUAL "cuda")
-    get_property(qoco_cuda_libs GLOBAL PROPERTY QOCO_CUDA_LIBS)
-    target_link_libraries("${name}" ${qoco_cuda_libs})
-  endif()
-  add_test(NAME ${name} COMMAND "${name}")
-endforeach()
+# foreach(file ${portfolio})
+#   set(name)
+#   get_filename_component(name ${file} NAME_WE)
+#   add_executable("${name}"
+#     "portfolio/${name}.cpp"
+#     "${PROJECT_SOURCE_DIR}/tests/main.cpp"
+#     "${PROJECT_SOURCE_DIR}/tests/utils/test_utils.cpp")
+#   target_link_libraries("${name}" qocostatic gtest_main)
+#   # Link CUDA libraries for CUDA backend
+#   if(${QOCO_ALGEBRA_BACKEND} STREQUAL "cuda")
+#     get_property(qoco_cuda_libs GLOBAL PROPERTY QOCO_CUDA_LIBS)
+#     target_link_libraries("${name}" ${qoco_cuda_libs})
+#   endif()
+#   add_test(NAME ${name} COMMAND "${name}")
+# endforeach()

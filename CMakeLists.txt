@@ -174,6 +174,7 @@ target_include_directories(qocostatic PUBLIC ${qoco_include})
 target_sources(qocostatic PRIVATE ${qoco_sources})
 
 # Build qoco demo.
+option(BUILD_QOCO_DEMO "Built demo" ON)
 if(BUILD_QOCO_DEMO)
     add_executable(qoco_demo ${PROJECT_SOURCE_DIR}/examples/qoco_demo.c)
     target_include_directories(qoco_demo PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -188,6 +189,7 @@ if(BUILD_QOCO_BENCHMARK_RUNNER)
 endif()
 
 # Test definitions.
+option(ENABLE_TESTING "Built tests" ON)
 if(ENABLE_TESTING)
     configure_file(CMakeLists.txt.in
         googletest-download/CMakeLists.txt)
