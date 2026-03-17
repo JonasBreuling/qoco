@@ -488,6 +488,89 @@ QOCOInt qoco_solve(QOCOSolver* solver)
   return QOCO_MAX_ITER;
 }
 
+QOCOInt qoco_kkt_solve(QOCOSolver* solver,
+                       const QOCOFloat* rhs,
+                       QOCOFloat* sol,
+                       QOCOInt iter_ref_iters)
+{
+  // Check that the solver has been factorized (qoco_solve must be called first)
+  if (solver->sol->status == QOCO_UNSOLVED) {
+    return qoco_error(QOCO_NOT_SOLVED_ERROR);
+  }
+
+  QOCOWorkspace* work = solver->work;
+
+  // Copy RHS into internal buffer (respect CPU/GPU mode)
+  set_cpu_mode(1);
+  copy_arrayf(rhs, get_data_vectorf(work->rhs), work->rhs->len);
+  set_cpu_mode(0);
+
+  // Sync RHS to device
+  sync_vector_to_device(work->rhs);
+
+  // Solve using existing factorization with iterative refinement
+  solver->linsys->linsys_solve(solver->linsys_data, work, work->rhs, work->xyz,
+                               iter_ref_iters);
+
+  // Copy solution out
+  set_cpu_mode(1);
+  copy_arrayf(get_data_vectorf(work->xyz), sol, work->xyz->len);
+  set_cpu_mode(0);
+
+  return QOCO_NO_ERROR;
+}
+
+QOCOInt qoco_kkt_multiply(QOCOSolver* solver, const QOCOFloat* x,
+                          QOCOFloat* y)
+{
+  /*
+   * Multiplies the original (unregularized) KKT matrix K by a vector x:
+   * y = K * x. The function uses the workspace buffers and the current
+   * Nesterov-Todd scaling (Wfull) and does not apply any static/dynamic
+   * regularization that may have been used during factorization.
+   */
+
+  /* Check that the solver has been factorized (qoco_solve must be called
+   * first) */
+  if (solver->sol->status == QOCO_UNSOLVED) {
+    return qoco_error(QOCO_NOT_SOLVED_ERROR);
+  }
+
+  QOCOWorkspace* work = solver->work;
+
+  /* Copy input vector into internal buffer (host mode) */
+  set_cpu_mode(1);
+  copy_arrayf(x, get_data_vectorf(work->xyzbuff1), work->xyzbuff1->len);
+  set_cpu_mode(0);
+
+  /* Compute y_buf = K * x_buf using internal kkt_multiply implementation */
+  kkt_multiply(get_data_vectorf(work->xyzbuff1),
+               get_data_vectorf(work->xyzbuff2),
+               work->data, 
+               get_data_vectorf(work->Wfull),
+               NULL,
+               NULL,
+               get_data_vectorf(work->xbuff), 
+               get_data_vectorf(work->ubuff1),
+               get_data_vectorf(work->ubuff2));
+
+
+  // compute_kkt_residual(work->data, work->x, work->y, work->s, work->z, work->kktres,
+  //                      solver->settings->kkt_static_reg, work->xyzbuff1,
+  //                      work->xbuff, work->ubuff1, work->Wsoc_idx,
+  //                      work->soc_idx);
+
+
+  // kkt_multiply(xyzbuff, kktres, data, NULL, NULL, NULL, nbuff, mbuff, mbuff);
+
+  /* Copy result out to caller (host mode) */
+  set_cpu_mode(1);
+  copy_arrayf(get_data_vectorf(work->xyzbuff2), y, work->xyzbuff2->len);
+  set_cpu_mode(0);
+
+  return QOCO_NO_ERROR;
+}
+
 QOCOInt qoco_cleanup(QOCOSolver* solver)
 {
 

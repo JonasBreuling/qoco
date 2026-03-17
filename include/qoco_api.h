@@ -125,6 +125,46 @@ void qoco_update_matrix_data(QOCOSolver* solver, QOCOFloat* Pxnew, QOCOFloat* Ax
 QOCOInt qoco_solve(QOCOSolver* solver);
 
 /**
+ * @brief Solves the KKT system using the existing factorization.
+ *
+ * Solves the perturbed KKT system Kx = rhs using the existing factorization.
+ * The solver must have been set up and factorized (i.e. qoco_solve must be
+ * called at least once first). Calling this function before qoco_solve will
+ * return an error.
+ *
+ * The number of iterative refinement steps can be specified. Call
+ * qoco_kkt_solve() with the desired number of iterative refinement steps.
+ *
+ * @param solver Pointer to solver.
+ * @param rhs Right-hand side vector of length (n + p + m).
+ * @param sol Solution vector of length (n + p + m).
+ * @param iter_ref_iters Number of iterative refinement steps to perform
+ *                       (0 means no iterative refinement).
+ * @return 0 (QOCO_NO_ERROR) if successful, error code otherwise.
+ */
+QOCOInt qoco_kkt_solve(QOCOSolver* solver,
+                       const QOCOFloat* rhs,
+                       QOCOFloat* sol,
+                       QOCOInt iter_ref_iters);
+
+/**
+ * @brief Multiplies the original (unregularized) KKT matrix K by a vector.
+ *
+ * Computes y = K * x where K is the original KKT matrix constructed from the
+ * problem data and current Nesterov-Todd scaling (i.e., not including any
+ * static/dynamic regularization applied during factorization). The solver must
+ * be set up (i.e., qoco_solve called at least once) before calling this
+ * function.
+ *
+ * @param solver Pointer to solver.
+ * @param x Input vector of length (n + p + m).
+ * @param y Output vector of length (n + p + m).
+ * @return 0 (QOCO_NO_ERROR) if successful, error code otherwise.
+ */
+QOCOInt qoco_kkt_multiply(QOCOSolver* solver, const QOCOFloat* x,
+                          QOCOFloat* y);
+
+/**
  * @brief Frees all memory allocated by qoco_setup.
  *
  * @param solver Pointer to solver.
