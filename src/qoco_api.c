@@ -255,7 +255,7 @@ QOCOInt qoco_update_settings(QOCOSolver* solver,
   solver->settings->abstol = new_settings->abstol;
   solver->settings->reltol = new_settings->reltol;
   solver->settings->abstol_inacc = new_settings->abstol_inacc;
-  solver->settings->abstol_inacc = new_settings->abstol_inacc;
+  solver->settings->reltol_inacc = new_settings->reltol_inacc;
   solver->settings->verbose = new_settings->verbose;
 
   return 0;
