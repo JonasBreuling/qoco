@@ -33,6 +33,10 @@ void ruiz_equilibration(QOCOProblemData* data, QOCOScaling* scaling,
   QOCOFloat* Anorm = (QOCOFloat*)qoco_malloc(sizeof(QOCOFloat) * data->n);
   QOCOFloat* Gnorm = (QOCOFloat*)qoco_malloc(sizeof(QOCOFloat) * data->n);
 
+  // clamp scaling as in clarabel
+  QOCOFloat scale_min = 1e-4;
+  QOCOFloat scale_max = 1e4;
+
   for (QOCOInt i = 0; i < ruiz_iters; ++i) {
 
     // Compute infinity norm of rows of [P A' G']
@@ -41,20 +45,20 @@ void ruiz_equilibration(QOCOProblemData* data, QOCOScaling* scaling,
       set_element_vectorf(scaling->delta, j, 0.0);
     }
     g = inf_norm(cdata, data->n);
-    // QOCOFloat Pinf_mean = 0.0;
-    QOCOFloat Pinf_max = 0.0;
+    QOCOFloat Pinf_mean = 0.0;
+    // QOCOFloat Pinf_max = 0.0;
     if (data->P) {
       col_inf_norm_USymm_matrix(data->P, delta_data);
       for (QOCOInt j = 0; j < data->n; ++j) {
-        // Pinf_mean += get_element_vectorf(scaling->delta, j);
-        Pinf_max = qoco_max(Pinf_max, get_element_vectorf(scaling->delta, j));
+        Pinf_mean += get_element_vectorf(scaling->delta, j);
+        // Pinf_max = qoco_max(Pinf_max, get_element_vectorf(scaling->delta, j));
       }
-      // Pinf_mean /= data->n;
+      Pinf_mean /= data->n;
     }
 
     // g = 1 / max(mean(Pinf), norm(c, "inf"));
-    // g = qoco_max(Pinf_mean, g);
-    g = qoco_max(Pinf_max, g);
+    g = qoco_max(Pinf_mean, g);
+    // g = qoco_max(Pinf_max, g);
     g = safe_div(1.0, g);
     scaling->k *= g;
 
@@ -117,25 +121,33 @@ void ruiz_equilibration(QOCOProblemData* data, QOCOScaling* scaling,
     QOCOFloat* F = &delta_data[data->n + data->p];
 
     // Make scalings for all variables in a second-order cone equal.
-    QOCOInt idx = data->l;
-    for (QOCOInt j = 0; j < data->nsoc; ++j) {
-      QOCOInt qj = get_element_vectori(data->q, j);
-      for (QOCOInt k = idx + 1; k < idx + qj; ++k) {
-        F[k] = F[idx];
-      }
-      idx += qj;
-    }
-    // // Compute max over all cone entries first, then broadcast.
     // QOCOInt idx = data->l;
     // for (QOCOInt j = 0; j < data->nsoc; ++j) {
-    //     QOCOInt qj = get_element_vectori(data->q, j);
-    //     QOCOFloat cone_scale = F[idx];
-    //     for (QOCOInt k = idx + 1; k < idx + qj; ++k)
-    //         cone_scale = qoco_max(cone_scale, F[k]);
-    //     for (QOCOInt k = idx; k < idx + qj; ++k)
-    //         F[k] = cone_scale;
-    //     idx += qj;
+    //   QOCOInt qj = get_element_vectori(data->q, j);
+    //   for (QOCOInt k = idx + 1; k < idx + qj; ++k) {
+    //     F[k] = F[idx];
+    //   }
+    //   idx += qj;
     // }
+    // Compute max over all cone entries first, then broadcast.
+    QOCOInt idx = data->l;
+    for (QOCOInt j = 0; j < data->nsoc; ++j) {
+        QOCOInt qj = get_element_vectori(data->q, j);
+        QOCOFloat cone_scale = F[idx];
+        for (QOCOInt k = idx + 1; k < idx + qj; ++k)
+            cone_scale = qoco_max(cone_scale, F[k]);
+        for (QOCOInt k = idx; k < idx + qj; ++k)
+            F[k] = cone_scale;
+        idx += qj;
+    }
+
+    // Clamp per-iteration steps so cumulative product stays in [scale_min, scale_max]
+    for (QOCOInt j = 0; j < data->n; ++j)
+      D[j] = qoco_clip(D[j], scale_min / Druiz_data[j], scale_max / Druiz_data[j]);
+    for (QOCOInt j = 0; j < data->p; ++j)
+      E[j] = qoco_clip(E[j], scale_min / Eruiz_data[j], scale_max / Eruiz_data[j]);
+    for (QOCOInt j = 0; j < data->m; ++j)
+      F[j] = qoco_clip(F[j], scale_min / Fruiz_data[j], scale_max / Fruiz_data[j]);
 
     // Scale P.
     if (data->P) {

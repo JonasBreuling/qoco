@@ -53,6 +53,7 @@ typedef double QOCOFloat;
 
 #define qoco_max(a, b) (((a) > (b)) ? (a) : (b))
 #define qoco_min(a, b) (((a) < (b)) ? (a) : (b))
+#define qoco_clip(a, lo, hi) (qoco_max((lo), qoco_min((a), (hi))))
 #define qoco_abs(a) (((a) > 0) ? (a) : (-(a)))
 #define safe_div(a, b)                                                         \
   ((qoco_abs(b) > (QOCOFloat)1e-15) ? ((a) / (b)) : QOCOFloat_MAX)
