@@ -30,31 +30,36 @@ void ruiz_equilibration(QOCOProblemData* data, QOCOScaling* scaling,
   QOCOFloat* bdata = get_data_vectorf(data->b);
   QOCOFloat* hdata = get_data_vectorf(data->h);
 
+  QOCOFloat* Anorm = (QOCOFloat*)qoco_malloc(sizeof(QOCOFloat) * data->n);
+  QOCOFloat* Gnorm = (QOCOFloat*)qoco_malloc(sizeof(QOCOFloat) * data->n);
+
   for (QOCOInt i = 0; i < ruiz_iters; ++i) {
 
     // Compute infinity norm of rows of [P A' G']
-    for (QOCOInt j = 0; j < data->n; ++j) {
+    // for (QOCOInt j = 0; j < data->n; ++j) {
+    for (QOCOInt j = 0; j < data->n + data->p + data->m; ++j) {
       set_element_vectorf(scaling->delta, j, 0.0);
     }
     g = inf_norm(cdata, data->n);
-    QOCOFloat Pinf_mean = 0.0;
+    // QOCOFloat Pinf_mean = 0.0;
+    QOCOFloat Pinf_max = 0.0;
     if (data->P) {
       col_inf_norm_USymm_matrix(data->P, delta_data);
       for (QOCOInt j = 0; j < data->n; ++j) {
-        Pinf_mean += get_element_vectorf(scaling->delta, j);
+        // Pinf_mean += get_element_vectorf(scaling->delta, j);
+        Pinf_max = qoco_max(Pinf_max, get_element_vectorf(scaling->delta, j));
       }
-      Pinf_mean /= data->n;
+      // Pinf_mean /= data->n;
     }
 
     // g = 1 / max(mean(Pinf), norm(c, "inf"));
-    g = qoco_max(Pinf_mean, g);
+    // g = qoco_max(Pinf_mean, g);
+    g = qoco_max(Pinf_max, g);
     g = safe_div(1.0, g);
     scaling->k *= g;
 
     // Compute column infinity norms of A and G
     // For CSC format, column norms are computed efficiently
-    QOCOFloat* Anorm = (QOCOFloat*)qoco_malloc(sizeof(QOCOFloat) * data->n);
-    QOCOFloat* Gnorm = (QOCOFloat*)qoco_malloc(sizeof(QOCOFloat) * data->n);
     if (get_nnz(data->A) > 0) {
       col_inf_norm_matrix(data->A, Anorm);
       for (QOCOInt j = 0; j < data->n; ++j) {
@@ -71,8 +76,6 @@ void ruiz_equilibration(QOCOProblemData* data, QOCOScaling* scaling,
         set_element_vectorf(scaling->delta, j, nrm);
       }
     }
-    qoco_free(Anorm);
-    qoco_free(Gnorm);
 
     // d(i) = 1 / sqrt(max([Pinf(i), Atinf(i), Gtinf(i)]));
     for (QOCOInt j = 0; j < data->n; ++j) {
@@ -122,6 +125,17 @@ void ruiz_equilibration(QOCOProblemData* data, QOCOScaling* scaling,
       }
       idx += qj;
     }
+    // // Compute max over all cone entries first, then broadcast.
+    // QOCOInt idx = data->l;
+    // for (QOCOInt j = 0; j < data->nsoc; ++j) {
+    //     QOCOInt qj = get_element_vectori(data->q, j);
+    //     QOCOFloat cone_scale = F[idx];
+    //     for (QOCOInt k = idx + 1; k < idx + qj; ++k)
+    //         cone_scale = qoco_max(cone_scale, F[k]);
+    //     for (QOCOInt k = idx; k < idx + qj; ++k)
+    //         F[k] = cone_scale;
+    //     idx += qj;
+    // }
 
     // Scale P.
     if (data->P) {
@@ -145,6 +159,9 @@ void ruiz_equilibration(QOCOProblemData* data, QOCOScaling* scaling,
     ew_product(Eruiz_data, E, Eruiz_data, data->p);
     ew_product(Fruiz_data, F, Fruiz_data, data->m);
   }
+
+  qoco_free(Anorm);
+  qoco_free(Gnorm);
 
   // Scale b.
   ew_product(bdata, Eruiz_data, bdata, data->p);
