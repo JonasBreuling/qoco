@@ -188,6 +188,7 @@ if(BUILD_QOCO_BENCHMARK_RUNNER)
 endif()
 
 # Test definitions.
+set(ENABLE_TESTING ON)
 if(ENABLE_TESTING)
     configure_file(CMakeLists.txt.in
         googletest-download/CMakeLists.txt)
